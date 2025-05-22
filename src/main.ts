@@ -6,7 +6,7 @@ import { parseArgs } from "jsr:@std/cli/parse-args";
 type Options = {
     target_dir: string,
     static_dir: string,
-    bundle: bool
+    bundle: boolean
 }
 
 async function copyDir(src: string, dest: string) {
@@ -22,10 +22,19 @@ async function copyDir(src: string, dest: string) {
   }
 }
 
+async function hasDir(dir: string) {
+    try {
+        const info = await Deno.stat(dir)
+        return info.isDirectory
+    } catch {
+        return false
+    }
+}
+
 async function build(options: Options) {
     const out = `${options.target_dir}/universes`
     await Deno.mkdir(out, { recursive: true })
-    if (options.bundle) {
+    if (options.bundle && await hasDir('_built')) {
         await Deno.remove('_built', { recursive: true })
     }
     await renderSlides(out, universePresentation)
