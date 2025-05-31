@@ -159,7 +159,7 @@ function sha256(s: string): string {
 function tex(p: SlideParams, source: string) {
     const hash = sha256(source)
     p.toBuild.push(source)
-    return <div class="figure"><img src={`/built/${hash}.svg`} /></div>
+    return <div class="figure"><img src={`../built/${hash}.svg`} /></div>
 }
 
 export function mathpar(p: SlideParams, inner: string) {
@@ -251,13 +251,13 @@ export function Base({ children, params, title }: { children?: VNode[], params: 
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <title>{params.title}</title>
-            <link href="/static/universes.css" rel="stylesheet" />
-            <link href="/static/katex.css" rel="stylesheet" />
+            <link href="../static/universes.css" rel="stylesheet" />
+            <link href="../static/katex.css" rel="stylesheet" />
             <script type="text/javascript">
                 window.PREV = {params.prev !== undefined ? params.prev : 'undefined'};
                 window.NEXT = {params.next !== undefined ? params.next : 'undefined'};
             </script>
-            <script src="/static/universes.js" type="text/javascript" />
+            <script src="../static/universes.js" type="text/javascript" />
         </head>
         <body>
             <main class={title ? 'title' : ''}>

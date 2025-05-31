@@ -32,7 +32,7 @@ async function hasDir(dir: string) {
 }
 
 async function build(options: Options) {
-    const out = `${options.target_dir}/universes`
+    const out = `${options.target_dir}/slides`
     await Deno.mkdir(out, { recursive: true })
     if (options.bundle && await hasDir('_built')) {
         await Deno.remove('_built', { recursive: true })

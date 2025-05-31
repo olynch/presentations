@@ -24,7 +24,7 @@ export const slides: Slide[] = [
         <h2>What are universes for?</h2>
         <ul>
             <li>What if type theory... in type theory?
-                <Figure src="/static/boom-mind-blown.gif" />
+                <Figure src="../static/boom-mind-blown.gif" />
             </li>
             <li>Handling size issues</li>
             <li><q>Staged metaprogramming</q> (code that generates code)</li>
@@ -402,7 +402,7 @@ end`)}
     p => <Base params={p}>
         <h2>Undirected wiring diagrams</h2>
         <p>We can represent undirected wiring diagrams as higher-order models</p>
-        <Figure src="/static/uwd.png" style="width:400px;" />
+        <Figure src="../static/uwd.png" style="width:400px;" />
         {M`\begin{align*}
             &X \colon \U \\
             &\tp{Span}\{x,\ldots\} \defeq \{R \colon \U, x \colon R \to X, \ldots \} \\
@@ -440,7 +440,7 @@ neg_is_unique = [x, y, _] ↦ {
   @refl
 };`}
         </pre>
-        <Figure src="/static/neg_is_unique.svg" />
+        <Figure src="../static/neg_is_unique.svg" />
     </Base>,
     p => <Base params={p}>
         <h2>Future work: extensional propositions</h2>
@@ -457,7 +457,7 @@ neg_is_unique = [x, y, _] ↦ {
     p => <Base params={p}>
         <h2>Future work: CatColab</h2>
         <p>Collaborative, compositional notebooks for scientific modeling</p>
-        <Figure src="/static/catcolab_stock_flow.png" style="height:400px"/>
+        <Figure src="../static/catcolab_stock_flow.png" style="height:400px"/>
         <p>Current paradigm is <q>models of double theories</q> which are related to models of GATs</p>
         <p>Will use <q>composition via dependent record types</q> in the future</p>
     </Base>,
