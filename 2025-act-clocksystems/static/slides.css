@@ -1,0 +1,180 @@
+footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 80ch;
+    max-height: 60ch;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 1ch;
+    margin: auto;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+html, body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    font-size: 22pt;
+    justify-content: center;
+}
+
+main.title {
+    justify-content: center;
+    align-items: center;
+}
+
+h1 {
+    font-size: 1.4em;
+}
+
+span.katex {
+    font-size: 1.04em;
+}
+
+.taxon {
+    font-weight: bold;
+    margin-right: 0.5ch;
+}
+
+.env {
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+    background-color: #eee;
+    padding-left: 6pt;
+    padding-right: 6pt;
+    padding-top: 3pt;
+    padding-bottom: 3pt;
+    border-radius: 4pt;
+}
+
+.proof {
+  margin-top: 1em;
+}
+
+.qed {
+  float: right;
+}
+
+pre {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 4pt;
+    padding-left: 6pt;
+    padding-right: 6pt;
+    padding-top: 3pt;
+    padding-bottom: 3pt;
+}
+
+.equation {
+    display: flex;
+    justify-content: center;
+}
+
+img {
+    width: auto;
+    height: auto;
+}
+
+.figure, .table {
+    margin-top: 0.5em;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+tr {
+    border: solid;
+    border-width: 1px 0;
+}
+
+thead > tr {
+    border-top: none;
+}
+
+tr:last-child {
+    border-bottom: none;
+}
+
+td, th {
+    padding-top: 3pt;
+    padding-bottom: 3pt;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+.csl-entry {
+    display: inline-block;
+}
+
+/* .csl-left-margin { */
+/*     padding-right: 1em; */
+/* } */
+
+/* .csl-entry > div { */
+/*     display: block; */
+/* } */
+
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+.citation {
+    white-space: nowrap;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: #555;
+  color: #fff;
+  padding: 4pt;
+  border-radius: 6px;
+  width: 60ch;
+  white-space: wrap;
+
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -30ch;
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+main > * {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.spaced > li {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
