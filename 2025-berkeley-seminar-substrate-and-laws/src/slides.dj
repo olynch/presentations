@@ -371,15 +371,23 @@ So naive dependent type theory *doesn't* work for modeling module signatures.
 
 # Solution: the phase distinction
 
+(Following [Sterling 2021](https://web.archive.org/web/20230326181813/https://www.jonmsterling.com/papers/sterling-2021-thesis.pdf), `8.1.1*3`).
+
 ```
-□ : Ty Γ → Ty Γ
-□ : Tm Γ A → Tm Γ □A
-■ : {A B : Ty Γ} → (□A ≡ □B) → A ≡ B
-■ : □ (Σ A B) ≡ Σ □A □B
-■ : (a b : El A) → □a ≡ □b
+§      : Ty Γ
+st     : Ty Γ → Ty (Γ ▷ §)
+st A   := A[p]
+El-dyn : Tm Γ § → (a : Tm Γ (El A)) → (b : Tm Γ (El B)) → a ≡ b
+Ty-st  : {A B : Ty Γ} → st A ≡ st B → A ≡ B
 ```
 
-Type equivalence can be decided via passing under `□`, and all small terms are equal under `□`.
+`El-dyn` says that the type `El A` for `A : Tm Γ U` is purely "dynamic". That is,
+at compile time, `El A` is contractible.
+
+`Ty-st` says that equality of types is decidable "statically", that is, type equality
+may not depend on anything dynamic.
+
+Put together, this means that if (internally) `f : El Nat → Type`, then `f 1 ≡ f 2`.
 
 # The Grothendieck construction of an indexed scwf supports a natural phase distinction
 

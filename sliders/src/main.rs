@@ -7,6 +7,8 @@ use std::{fs, io, path::Path};
 
 use axum::Router;
 use axum::extract::State;
+use axum::http::header;
+use axum::response::IntoResponse;
 use axum::response::sse::{Event, Sse};
 use axum::routing::get;
 use clap::*;
@@ -73,6 +75,9 @@ fn build(config: &Config) -> io::Result<()> {
         static_,
     } = config;
     copy_dir_all(&static_, &out_dir.join("static"))?;
+    {
+        let mut refresh_js = fs::File::create(out_dir.join("refresh.js"))?;
+    }
     let src = fs::read_to_string(src)?;
     let mut event_iter = jotdown::Parser::new(&src).into_iter().peekable();
     let mut slides = Vec::new();
@@ -150,6 +155,12 @@ async fn sse_handler(
     )
 }
 
+async fn refresh_js_handler() -> impl IntoResponse {
+    ([(header::CONTENT_TYPE, "text/javascript")], REFRESH_SRC)
+}
+
+const REFRESH_SRC: &str = include_str!("../resources/refresh.js");
+
 async fn serve(dir: PathBuf, port: u32, rx: Receiver<Event>) -> io::Result<()> {
     let host = format!("127.0.0.1:{port}");
     info!("serving {dir:?} at {host}");
@@ -161,6 +172,7 @@ async fn serve(dir: PathBuf, port: u32, rx: Receiver<Event>) -> io::Result<()> {
     // Build our application with a route for static files
     let app = Router::new()
         .route("/refresh", get(sse_handler))
+        .route("/refresh.js", get(refresh_js_handler))
         .fallback_service(static_files)
         .layer(TraceLayer::new_for_http())
         .with_state(state);
