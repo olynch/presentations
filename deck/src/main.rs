@@ -76,7 +76,7 @@ fn build(config: &Config) -> io::Result<()> {
     } = config;
     copy_dir_all(&static_, &out_dir.join("static"))?;
     {
-        let mut refresh_js = fs::File::create(out_dir.join("refresh.js"))?;
+        let _refresh_js = fs::File::create(out_dir.join("refresh.js"))?;
     }
     let src = fs::read_to_string(src)?;
     let mut event_iter = jotdown::Parser::new(&src).into_iter().peekable();
