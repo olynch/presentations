@@ -10,9 +10,9 @@ main {
     flex-direction: column;
     width: 80ch;
     max-height: 60ch;
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 1ch;
+    /* border-style: solid; */
+    /* border-width: 1px; */
+    /* border-radius: 1ch; */
     margin: auto;
     padding-left: 1em;
     padding-right: 1em;

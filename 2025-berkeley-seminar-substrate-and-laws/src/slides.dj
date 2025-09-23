@@ -1,0 +1,584 @@
+{.title}
+# Substrate and Laws
+
+Berkeley Seminar, September 23
+
+Owen Lynch
+
+# Overview
+
+{.wide}
+1. Systems theory a la Willems
+2. Type theory
+3. Type theory for systems theory
+
+# What is a mathematical model?
+
+> A _mathematical model_ is a pair $`(\mathbb{U}, \mathfrak{B})` with $`\mathbb{U}` a set, called the _universum_---its elements are called outcomes---and $`\mathfrak{B}` a subset of $`\mathbb{U}`, called the _behavior_.
+>
+> --- Jan Willem Polderman and Jan C. Willems, _Introduction to the Mathematical Theory of Systems and Control_
+
+*Example* (also from Willems). A model of H₂O may be given as
+$$`\begin{align*}
+\mathbb{U} &= \{\text{ice},\text{water},\text{steam}\} \times [-273,\infty) \\
+\mathfrak{B} &= (\{\text{ice}\} \times [-273,0]) \cup (\{\text{water}\} \times [0,100]) \cup (\{\text{steam}\} \times [100,\infty))
+\end{align*}`
+
+# Electrical circuits
+
+*Example*. A model of a resistor with resistance $`R` may be described by
+$$`\begin{align*}
+\mathbb{U} &= \mathbb{R}^2 \\
+\mathfrak{B} &= \{ (I, V) \mid V = IR \}
+\end{align*}`
+
+::: figure
+![resistor circuit](static/rlc.png)
+
+*Figure.* A RLC Circuit.
+:::
+
+*Example* (From Fong 2016). A model of the above circuit is
+$$`\begin{align*}
+\mathbb{U} &= C^1(\mathbb{R})^2 \\
+\mathfrak{B} &= \left\{(v, i) \mid v(t) = L \frac{d}{dt} i(t) + R i(t) + C^{-1} \int_0^t i(s)\,ds\right\}
+\end{align*}`
+
+# Why are there two things?
+
+In set theory, this is obscure.
+
+In type theory, it is perfectly clear: we permit different syntactic descriptions of universums and behaviors.
+
+*Example.* There is a systems theory doctrine where the universi are described by finite sets, and a behavior on $`X` is a subset of $`\mathbb{R}^X` described by polynomial equations.
+
+OK, fun time is over, now we do type theory.
+
+# Type theory warmup: categories
+
+*Motivation.* We're going to be presenting type theory stuff as informal Agda-style GATs, so let's see what categories look like in this notation.
+
+*Definition.* A *category* is a dependent record with fields
+
+```
+Ob    : Type
+_⇒_   : Ob → Ob → Type
+id    : (x : Ob) → (x ⇒ x)
+_∘_   : (y ⇒ z) → (x ⇒ y) → (x ⇒ z)
+assoc : (f ∘ g) ∘ h ≡ f ∘ (g ∘ h)
+idr   : f ∘ (id x) ≡ f
+idl   : (id x) ∘ f ≡ f
+```
+
+# Type theory warmup: indexed categories
+
+*Motivation.* We are going to describe universum + behavior using an indexed category.
+
+*Definition.* An *indexed category* with base `C₀` is a dependent record with fields:
+
+```
+open C₀ adding suffix ₀;
+
+Ob₁  : Ob₀ → Type
+_[_] : Ob₁ y → (x ⇒₀ y) → Ob x
+■    : a[id₀ x]  ≡ a
+■    : a[f ∘₀ g] ≡ a[f][g]
+
+_⇒₁_ : Ob₁ x → Ob₁ x → Type
+_[_] : {a : Ob₁ y} → {b : Ob₁ y} → (a ⇒₁ b) → (f : x ⇒₁ y) → (a[f] ⇒₁ b[f])
+■    : l[id₀ x]  ≡ l
+■    : l[f ∘₀ g] ≡ l[f][g]
+
+id₁  : (a : Ob₁ x) → a ⇒₁ a
+■    : (id₁ a)[f]  ≡ id₁ (a[f])
+
+_∘₁_ : (a ⇒₁ b) → (b ⇒₁ c) → (a ⇒₁ c)
+■    : (l ∘₁ m)[f] ≡ (l[f] ∘₁ m[f])
+
+assoc₁, idr₁, idl₁ : ...
+```
+
+# Scwfs
+
+*Definition.* A *simple category with families* is a category where we call the type of objects `Con`, and we have additionally:
+
+```
+Ty   : Type
+Tm   : Con → Ty → Type
+_[_] : Tm Δ A → (Γ ⇒ Δ) → Tm Γ A
+■    : a[id x]  ≡ a
+■    : a[f ∘ g] ≡ a[f][g]
+
+•    : Con
+_▷_  : Con → Ty → Con
+
+!    : Γ ⇒ •
+■    : (γ : Γ ⇒ •) → γ ≡ !
+
+_,_  : (Γ ⇒ Δ) → Tm Γ A → Γ ⇒ (Δ ▷ A)
+p    : Γ ▷ A ⇒ Γ
+q    : Tm (Γ ▷ A) A
+■    : (γ : Γ ⇒ Δ ▷ A) → γ ≡ (p ∘ γ , q[γ])
+■    : (γ : Γ ⇒ Δ) → (a : Tm Γ A) → q[(γ , a)] ≡ a
+■    : (γ : Γ ⇒ Δ) → (a : Tm Γ A) → p ∘ (γ , a) ≡ γ
+```
+
+A scwf is *democratic* if every context is of the form `• ▷ A₁ ▷ ... ▷ Aₙ` for some `A₁,...,Aₙ : Ty`.
+
+# Scwfs and the simply typed lambda calculus
+
+The four type formers of a scwf (`Con`, `_⇒_`, `Ty` and `Tm`) model the four judgment forms for the simply typed lambda calculus:
+$$`\begin{align*}
+&\Gamma \; \mathrm{ctx} \\
+&\gamma : \Gamma \Rightarrow \Delta \\
+& A \; \mathrm{ty} \\
+& \Gamma \vdash a \colon A
+\end{align*}`
+
+Laws of a scwf = interactions between substitutions and terms.
+
+More interesting:
+
+```
+Fun : Ty → Ty → Ty
+λ   : Tm (Γ ▷ A) B → Tm Γ (Fun A B)
+_$_ : Tm Γ (Fun A B) → Tm Γ A → Tm Γ B
+β   : {b : Tm Γ B} → (λ b) $ a ≡ b[(id Γ, a)]
+η   : f ≡ λ (f[p] $ q)
+```
+
+# Internal language of a scwf
+
+Working internally means that we use variable names.
+
+Assume `Nat` is a type.
+
+Internal:
+
+```
+fst : Nat → Nat → Nat
+fst = a ↦ b ↦ a
+```
+
+External:
+
+```
+fst : Tm • (Fun Nat (Fun Nat Nat))
+fst = λ (λ q[p])
+```
+
+What about polymorphic functions?
+
+```
+fst : a → b → a
+fst = ?
+```
+
+# Indexed scwfs
+
+*Idea.* An indexed scwf models the judgment structure of a _layered_ type theory, which has a split context $`\Gamma \mid \Gamma' \vdash a : A`.
+
+*Definition.* An *indexed scwf* over a scwf `C₀` consists of an indexed category over `C₀` (renaming `Ob₁` to `Con₁`), along with:
+
+```
+Ty₁   : Con₀ → Type
+_[_]  : Ty₁ Δ → (Γ ⇒₀ Δ) → Ty₁ Γ
+...
+
+Tm₁   : Con₁ Γ → Ty₁ Γ → Type
+_[_]₀ : {Δ' : Con₁ Δ} → Tm₁ Δ' A → (γ : Γ ⇒₀ Δ) → Tm₁ Δ'[γ] A[γ]
+...
+_[_]₁ : {Γ₁' Γ₂' : Con₁ Γ} → Tm₁ Γ₂' A → (Γ₁' ⇒₁ Γ₂') → Tm₁ Γ₁' A
+...
+
+•₁    : Con₁ Γ
+_▷₁_  : Con₁ Γ → Ty₁ Γ → Con₁ Γ
+
+_,₁_  : (Γ' ⇒₁ Δ') → Tm₁ Γ' A → Γ' ⇒ (Δ' ▷ A)
+p₁    : Γ' ▷ A ⇒₁ Γ'
+q₁    : Tm₁ (Γ' ▷ A) A
+...
+```
+
+# Example: parametric simply typed lambda calculus
+
+```
+★   : Ty₀
+■   : Tm₀ Γ ★ ≡ Ty₁ Γ
+
+Fun : Ty₁ Γ → Ty₁ Γ → Ty₁ Γ
+λ   : Tm₁ (Γ' ▷₁ A) B → Tm₁ Γ' (Fun A B)
+...
+```
+
+Now we can write down the polymorphic `fst` from before:
+
+```
+fst : a → b → a
+fst = x ↦ y ↦ x
+```
+
+```
+fst : Tm₁ {•₀ ▷ ★ ▷ ★} •₁ (Fun q₀[p₀] (Fun q₀ q₀[p₀]))
+fst = λ (λ q₁[p₁])
+```
+
+This is a term in the context of two type variables.
+
+# Example: System F
+
+```
+FUN : (A : Ty₀) → Ty₁ (Γ ▷ A) → Ty₁ Γ
+Λ   : {Γ : Con₀} → {Γ' : Con₁ Γ} →
+      Tm₁ {Γ ▷ A} Γ'[p₀] B → Tm₁ {Γ} Γ' (FUN A B)
+...
+```
+
+```
+fst : (a : ★) ⇒ (b : ★) ⇒ a → b → a
+fst = _       ↦ _       ↦ x ↦ y ↦ x
+```
+
+```
+fst : Tm₁ •₁ (FUN ★ (FUN ★ (Fun q₀[p₀] (Fun q₀ q₀[p₀]))))
+fst = Λ (Λ (λ (λ q₁[p₁]))))
+```
+
+# Example: System Fω
+
+System Fω allows forming "higher kinds." This just makes the `Ty₀` level into a model of the simply typed lambda calculus.
+
+```
+TFun : Ty₀ → Ty₀ → Ty₀
+λ₀   : Tm₀ (Γ ▷₀ A) B → Tm₀ Γ (TFun A B)
+_$₀_ : Tm₀ Γ (TFun A B) → Tm₀ Γ A → Tm₀ Γ B
+...
+```
+
+```
+map-+1 : (f : ★ →₀ ★) ⇒ ((a : ★) ⇒ (b : ★) ⇒ (a → b) → (f a → f b)) →
+         f Nat → f Nat
+map-+1 map xs = map Nat Nat (x ↦ x + 1) xs
+```
+
+# Modules
+
+*Definition.* A module is a collection of types and terms in a programming language.
+
+*Example.*
+
+```
+module IntArithmetic = struct
+  type t = int
+
+  let plus : t → t → t = fun x => fun y => x + y
+  let times : t → t → t = fun x => fun y => x * y
+end
+```
+
+Modules have *signatures*.
+
+```
+module type Arithmetic = sig
+  type t
+
+  val plus : t → t → t
+  val times : t → t → t
+end
+
+IntArithmetic : Arithmetic
+```
+
+# Signatures as dependent record types
+
+In the earlier example, the type of `plus` _depends_ on the type bound to `t`.
+
+*Definition.* A *category with families* (cwf) is a category (renaming `Ob` to `Con`) along with:
+
+```
+Ty   : Con → Type
+_[_] : Ty Δ → (Γ ⇒ Δ) → Ty Γ
+...
+
+Tm   : (Γ : Con) → Ty Γ → Type
+_[_] : Tm Δ A → (γ : Γ ⇒ Δ) → Tm Γ A[γ]
+...
+
+•   : Con
+_▷_ : (Γ : Con) → Ty Γ → Con
+
+_,_ : (γ : Γ ⇒ Δ) → Tm Γ A[γ] → (Γ ⇒ Δ ▷ A)
+p   : Γ ▷ A ⇒ Γ
+q   : Tm (Γ ▷ A) A[p]
+...
+```
+
+# Sigma types
+
+```
+Σ    : (A : Ty Γ) → Ty (Γ ▷ A) → Ty Γ
+cons : (a : Tm Γ A) → (Tm Γ B[(id Γ, a)]) → Tm Γ (Σ A B)
+π₀   : Tm Γ (Σ A B) → Tm Γ A
+π₁   : (p : Tm Γ (Σ A B)) → Tm Γ B[(id Γ, π₀ p)]
+...
+```
+
+*Example.* Suppose we have a universe
+
+```
+U : Ty Γ
+El : Tm Γ U → Ty Γ
+```
+
+We can then form a type of "pointed elements of U" as
+
+```
+Σ U (El q) : Ty •
+```
+
+In internal notation, this would be something like
+
+```
+Σ U (A ↦ El A)
+```
+
+# Dependent record types
+
+Dependent record types are sugar for iterated sigma types.
+
+```
+[
+  A : U,
+  add : El Α → El A → El A,
+  times : El A → El A → El A
+] ≡
+Σ U (A ↦
+  Σ (El Α → El A → El A) (add ↦
+    Σ (El A → El A → El A) (times ↦ Unit)
+  )
+)
+```
+
+# Problem: deciding equivalence of terms
+
+When writing an _elaborator_ (something that produces well-formed syntax from informal notation, or reports an error), we have to decide type equivalence, because if `A ≡ A'` and `x : A`, we have to also judge `x : A'`.
+
+In dependent type theory, deciding type equivalence involves deciding term equivalence, because if `f : A → Type`, we need to know when `f x ≡ f y`, which means we have to know when `x ≡ y`.
+
+But for a programming language with arbitrary recursion, side effects, etc., term equivalence is not decidable!
+
+So naive dependent type theory *doesn't* work for modeling module signatures.
+
+# Solution: the phase distinction
+
+```
+□ : Ty Γ → Ty Γ
+□ : Tm Γ A → Tm Γ □A
+■ : {A B : Ty Γ} → (□A ≡ □B) → A ≡ B
+■ : □ (Σ A B) ≡ Σ □A □B
+■ : (a b : El A) → □a ≡ □b
+```
+
+Type equivalence can be decided via passing under `□`, and all small terms are equal under `□`.
+
+# The Grothendieck construction of an indexed scwf supports a natural phase distinction
+
+Given an indexed scwf, we can form a *cwf* via a Grothendieck construction.
+
+```
+Con    := [ 0 : Con₀     , 1 : Con₁ 0                ]
+Ty Γ   := [ 0 : Ty₀      , 1 : Ty₁ (Γ₀ ▷ 0)          ]
+Tm Γ A := [ 0 : Tm₀ Γ₀ A₀, 1 : Tm₁ Γ₁ A₁[(id Γ₀, 0)] ]
+```
+
+Then, given `Unit : Ty₁ Γ`, `'tt : Tm₁ Γ Unit`, we have
+
+```
+□A := [ 0 := A₀, 1 := Unit ]
+□a := [ 0 := a₀, 1 := 'tt  ]
+```
+
+# OneML Examples: Map
+
+```
+type EQ := [ t : Type, eq : t -> t -> Bool ]
+
+type MAP := [
+  key : Type,
+  t : Type => Type,
+
+  lookup : (a : Type) => t a -> key -> Option a,
+  empty : (a : Type) => t a,
+  insert : (a : Type) => key -> a -> t a -> t a,
+]
+
+term NaiveMap : (Eq : EQ) => MAP & [ .key := Eq.t ] := Eq ↦ [
+  key := Eq.t,
+  t := a ↦ Eq.t -> Option a,
+
+  lookup := a ↦ m ↦ m,
+  empty := _ ↦ _ ↦ 'none,
+  insert := _ ↦ k ↦ v ↦ x ↦ j ↦ %if (Eq.eq k j) ['some v, x j]
+]
+```
+
+# OneML Examples: Monad
+
+```
+type MONAD := [
+  m : Type => Type,
+
+  pure : (a : Type) => a -> m a,
+  bind : (a : Type) => (b : Type) => m a -> (a -> m b) -> m b
+]
+
+term OptionT : MONAD => MONAD := M ↦ [
+  m := a ↦ M.m (Option a),
+
+  pure := a ↦ x ↦ M.pure (Option a) ('some x),
+  bind := a ↦ b ↦ mx ↦ mf ↦
+    M.bind (Option a) (Option b)
+      mx
+      (opt_x ↦ %option_elim opt_x [
+          x ↦ mf x,
+          M.pure (Option b) 'none
+      ])
+]
+```
+
+# DoubleTT Examples: Graph flip
+
+```
+def reverse[G : Graph] : Graph := [
+  V := G.V,
+  E := G.E,
+  src := G.tgt,
+  tgt := G.src
+]
+```
+
+# DoubleTT Examples: WeightedGraph
+
+::: scroll
+```
+type WeightedGraph := [
+  V : Entity,
+  E : Entity,
+  Weight : AttrType,
+  src : (Id Entity)[E, V],
+  tgt : (Id Entity)[E, V],
+  weight : Attr[E, Weight]
+]
+
+type WeightedGraph2 := [
+  V : Entity,
+  g1 : WeightedGraph & [ .V := V ],
+  g2 : WeightedGraph & [ .V := V ]
+]
+
+generate WeightedGraph2
+#/ result:
+#/ object generators:
+#/  V : Entity
+#/  g1.E : Entity
+#/  g1.Weight : AttrType
+#/  g2.E : Entity
+#/  g2.Weight : AttrType
+#/ morphism generators:
+#/  g1.src : g1.E -> V (Id Entity)
+#/  g1.tgt : g1.E -> V (Id Entity)
+#/  g1.weight : g1.E -> g1.Weight (Attr)
+#/  g2.src : g2.E -> V (Id Entity)
+#/  g2.tgt : g2.E -> V (Id Entity)
+#/  g2.weight : g2.E -> g2.Weight (Attr)
+```
+:::
+
+# Past work: Resource Sharing Machines
+
+::: scroll
+```
+GrowthSpecies = {
+  pop: @resource;
+  growth: @input;
+
+  d pop += growth * pop;
+};
+
+DecaySpecies = {
+  pop: @resource;
+  decay: @input;
+
+  d pop -= decay * pop;
+};
+
+Predation = {
+  predator: @resource;
+  prey: @resource;
+
+  rate: @input;
+  growth_per_kill: @input;
+
+  interaction = predator * prey;
+
+  d predator += growth_per_kill * rate * interaction;
+  d prey -= rate * interaction;
+};
+
+
+LotkaVolterra = {
+  predator: DecaySpecies;
+  prey: GrowthSpecies;
+
+  predation: Predation;
+
+  predation.predator == predator.pop;
+  predation.prey == prey.pop;
+};
+```
+:::
+
+# Future work: DOTS
+
+There are two main doctrines in DOTS: lens-based doctrines and span-based doctrines.
+
+*Span-based doctrines:*
+
+- "acausal" (closer to Willems)
+- need to "solve" in order to simulate
+- Type theory challenge: fairly straightforward
+
+*Lens-based doctrines:*
+
+- "causal"
+- can simulate directly
+- Type theory: linear type theory
+
+# Future work: Databases
+
+In theory, a database is a just a model of a regular hyperdoctrine theory. The type theory for this is again a Grothendieck construction of an indexed scwf.
+
+In practice, we need to separate _finitely supported_ propositions from general propositions.
+
+*Example.* $`\Delta_A = \{(a,a) \mid a \colon A \} \subset A \times A` is not finitely supported for infinite $`A`. However, if $`U \subset_0 A`, then $`\{ b \mid (a, b) \in \Delta_A \:\wedge\: a \in U\}` is also finitely supported.
+
+How to model this mathematically/type theoretically?
+
+# Future work: Petri nets
+
+```
+type SIR := [
+  S : Species,
+  I : Species,
+  R : Species,
+  inf : [S, I] → [I, I],
+  rec : [I] → [R]
+]
+
+def process[M: SIR]: [M.S, M.S, M.I] → [M.I, M.I, M.R] := [a, b, c] ↦ {
+  [b, c] := M.inf [b, c];
+  [a, b] := M.inf [a, b];
+  [b]    := M.rec [b];
+  [a, c, b]
+}
+```

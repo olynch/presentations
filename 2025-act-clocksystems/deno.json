@@ -2,5 +2,6 @@
   "tasks": {
     "dev": "deno run --allow-read --allow-write --allow-env --allow-run --allow-net --watch src/main.ts --build --serve"
     "build": "deno run --allow-read --allow-write --allow-env --allow-run --allow-net src/main.ts --build --bundle"
+    "deploy": "deno run build; rsync -rud out/ owenlynch.org:/var/www/owenlynch.org/archive/2025-act-clocksystems/"
   },
 }

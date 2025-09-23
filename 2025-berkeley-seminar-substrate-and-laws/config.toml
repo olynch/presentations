@@ -1,0 +1,4 @@
+src = "src/slides.dj"
+template = "src/slide.html"
+out = "out"
+static = "static"
