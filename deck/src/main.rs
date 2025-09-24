@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use std::process::exit;
+use std::process::{self, exit};
 use std::sync::Arc;
 use std::sync::mpsc::channel;
 use std::time::Duration;
@@ -30,9 +30,12 @@ use tower_http::trace::TraceLayer;
 #[derive(Subcommand)]
 enum Command {
     Build,
+    Deploy,
     Serve {
         #[arg(short, long, default_value_t = 3000)]
         port: u32,
+        #[arg(short, long, default_value_t = true)]
+        open: bool,
     },
 }
 
@@ -43,6 +46,7 @@ struct Config {
     template: PathBuf,
     #[serde(rename = "static")]
     static_: PathBuf,
+    deploy: String,
 }
 
 #[derive(Parser)]
@@ -73,6 +77,7 @@ fn build(config: &Config) -> io::Result<()> {
         out: out_dir,
         template,
         static_,
+        ..
     } = config;
     copy_dir_all(&static_, &out_dir.join("static"))?;
     {
@@ -161,9 +166,8 @@ async fn refresh_js_handler() -> impl IntoResponse {
 
 const REFRESH_SRC: &str = include_str!("../resources/refresh.js");
 
-async fn serve(dir: PathBuf, port: u32, rx: Receiver<Event>) -> io::Result<()> {
+async fn serve(dir: PathBuf, port: u32, open: bool, rx: Receiver<Event>) -> io::Result<()> {
     let host = format!("127.0.0.1:{port}");
-    info!("serving {dir:?} at {host}");
     let static_files = ServeDir::new(&dir);
 
     let state = ServerState {
@@ -178,7 +182,17 @@ async fn serve(dir: PathBuf, port: u32, rx: Receiver<Event>) -> io::Result<()> {
         .with_state(state);
 
     // Run the server
-    let listener = tokio::net::TcpListener::bind(host).await?;
+    let listener = tokio::net::TcpListener::bind(&host).await?;
+
+    tokio::spawn(async move {
+        tokio::time::sleep(Duration::from_millis(100)).await;
+
+        info!("serving {dir:?} at http://{host}");
+        if open {
+            let _ = webbrowser::open(&format!("http://{host}/1.html"));
+        }
+    });
+
     axum::serve(listener, app.into_make_service()).await?;
     Ok(())
 }
@@ -234,6 +248,23 @@ fn watch(config: Config, refresh: Sender<Event>) -> io::Result<()> {
     Ok(())
 }
 
+fn deploy(dir: &Path, dest: &str) -> io::Result<()> {
+    let status = process::Command::new("rsync")
+        .args(["-rutv", &format!("{}/", dir.to_string_lossy()), dest])
+        .status()?;
+    if !status.success() {
+        match status.code() {
+            Some(code) => {
+                error!("rsync failed with code {}", code)
+            }
+            None => {
+                error!("rsync killed by signal")
+            }
+        }
+    }
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> io::Result<()> {
     tracing_subscriber::fmt()
@@ -254,7 +285,7 @@ async fn main() -> io::Result<()> {
         Command::Build => {
             build(&config)?;
         }
-        Command::Serve { port } => {
+        Command::Serve { port, open } => {
             build(&config)?;
             let (tx, rx) = tokio::sync::broadcast::channel(10);
 
@@ -263,7 +294,7 @@ async fn main() -> io::Result<()> {
                 tokio::task::spawn_blocking(move || watch(config, tx))
             };
 
-            let backend = tokio::spawn(serve(config.out.clone(), port, rx));
+            let backend = tokio::spawn(serve(config.out.clone(), port, open, rx));
 
             tokio::select! {
                 _ = backend => {}
@@ -273,6 +304,10 @@ async fn main() -> io::Result<()> {
             if tokio::signal::ctrl_c().await.is_ok() {
                 exit(0)
             }
+        }
+        Command::Deploy => {
+            build(&config)?;
+            deploy(&config.out, &config.deploy)?;
         }
     }
 
