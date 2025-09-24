@@ -401,12 +401,17 @@ Ty Γ   := [ 0 : Ty₀      , 1 : Ty₁ (Γ₀ ▷ 0)          ]
 Tm Γ A := [ 0 : Tm₀ Γ₀ A₀, 1 : Tm₁ Γ₁ A₁[(id Γ₀, 0)] ]
 ```
 
-Then, given `Unit : Ty₁ Γ`, `'tt : Tm₁ Γ Unit`, we have
+Then we define the "static open" `§` by
 
 ```
-□A := [ 0 := A₀, 1 := Unit ]
-□a := [ 0 := a₀, 1 := 'tt  ]
+§ : Ty Γ := [ 0 := Unit, 1 := ∅ ]
 ```
+
+where `∅` is an empty type. Because types only depend on `Γ₀`, this doesn't
+affect any types. But it allows us to conclude that all indexed terms are equal,
+because `∅` is initial.
+
+Thus, it validates `El-dyn` and `Ty-st` as required.
 
 # OneML Examples: Map
 
