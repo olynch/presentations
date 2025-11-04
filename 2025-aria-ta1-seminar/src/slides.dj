@@ -1,0 +1,382 @@
+
+{.title}
+#
+
+{.title-box}
+:::
+Abstract interpretation
+
+for
+
+Semi-dependent type theories
+:::
+
+November 5, 2025, ARIA TA1.1 Seminar
+
+Owen Lynch
+
+(navigate with arrow keys)
+
+# Overview
+
+1. Module systems as categorical algebra
+2. Module systems as semi-dependent type theory
+3. The role of evaluation within dependent type theory
+4. Abstract interpretation review
+5. Abstract interpretation for semi-dependent type theories
+
+# Computational trinitarianism
+
+{.scroll}
+:::
+`
+<table><thead><tr><th><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/logic">logic</a></th><th><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/set+theory">set theory</a> (<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/internal+logic+of+set+theory">internal logic</a> of)</th><th><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/category+theory">category theory</a></th><th><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/type+theory">type theory</a></th></tr></thead><tbody><tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/proposition">proposition</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/set">set</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/object">object</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/type">type</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/predicate">predicate</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/family+of+sets">family of sets</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/display+morphism">display morphism</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/dependent+type">dependent type</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/proof">proof</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/element">element</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/generalized+element">generalized element</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/term">term</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/program">program</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/cut+rule">cut rule</a></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/composition">composition</a> of <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/classifying+morphisms">classifying morphisms</a> / <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/pullback">pullback</a> of <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/display+maps">display maps</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/substitution">substitution</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/introduction+rule">introduction rule</a> for <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/implication">implication</a></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/counit">counit</a> for hom-tensor adjunction</td><td style="text-align: left;">lambda</td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/elimination+rule">elimination rule</a> for <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/implication">implication</a></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/unit">unit</a> for hom-tensor adjunction</td><td style="text-align: left;">application</td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/cut+elimination">cut elimination</a> for <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/implication">implication</a></td><td style="text-align: left;"></td><td style="text-align: left;">one of the <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/zigzag+identities">zigzag identities</a> for hom-tensor adjunction</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/beta+reduction">beta reduction</a></td></tr>
+<tr><td style="text-align: left;">identity elimination for <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/implication">implication</a></td><td style="text-align: left;"></td><td style="text-align: left;">the other <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/zigzag+identity">zigzag identity</a> for hom-tensor adjunction</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/eta+conversion">eta conversion</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/true">true</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/singleton">singleton</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/terminal+object">terminal object</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/%28-2%29-truncated+object">(-2)-truncated object</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/h-level+0">h-level 0</a>-<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/type">type</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/unit+type">unit type</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/false">false</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/empty+set">empty set</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/initial+object">initial object</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/empty+type">empty type</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/proposition">proposition</a>, <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/truth+value">truth value</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/subsingleton">subsingleton</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/subterminal+object">subterminal object</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/%28-1%29-truncated+object">(-1)-truncated object</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/h-proposition">h-proposition</a>, <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/mere+proposition">mere proposition</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/logical+conjunction">logical conjunction</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/cartesian+product">cartesian product</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/product">product</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/product+type">product type</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/disjunction">disjunction</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/disjoint+union">disjoint union</a> (<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/support">support</a> of)</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/coproduct">coproduct</a> (<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/%28-1%29-truncation">(-1)-truncation</a> of)</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/sum+type">sum type</a> (<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/bracket+type">bracket type</a> of)</td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/implication">implication</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/function+set">function set</a> (into <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/subsingleton">subsingleton</a>)</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/internal+hom">internal hom</a> (into <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/subterminal+object">subterminal object</a>)</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/function+type">function type</a> (into <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/h-proposition">h-proposition</a>)</td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/negation">negation</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/function+set">function set</a> into <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/empty+set">empty set</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/internal+hom">internal hom</a> into <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/initial+object">initial object</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/function+type">function type</a> into <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/empty+type">empty type</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/universal+quantification">universal quantification</a></td><td style="text-align: left;">indexed <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/cartesian+product">cartesian product</a> (of family of <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/subsingletons">subsingletons</a>)</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/dependent+product">dependent product</a> (of family of <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/subterminal+objects">subterminal objects</a>)</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/dependent+product+type">dependent product type</a> (of family of <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/h-propositions">h-propositions</a>)</td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/existential+quantification">existential quantification</a></td><td style="text-align: left;">indexed <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/disjoint+union">disjoint union</a> (<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/support">support</a> of)</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/dependent+sum">dependent sum</a> (<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/%28-1%29-truncation">(-1)-truncation</a> of)</td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/dependent+sum+type">dependent sum type</a> (<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/bracket+type">bracket type</a> of)</td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/logical+equivalence">logical equivalence</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/bijection+set">bijection set</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/object+of+isomorphisms">object of isomorphisms</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/equivalence+type">equivalence type</a></td></tr>
+<tr><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/support+set">support set</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/support+object">support object</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/%28-1%29-truncation">(-1)-truncation</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/propositional+truncation">propositional truncation</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/bracket+type">bracket type</a></td></tr>
+<tr><td style="text-align: left;"></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/n-image">n-image</a> of <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/morphism">morphism</a> into <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/terminal+object">terminal object</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/n-truncation">n-truncation</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/n-truncation+modality">n-truncation modality</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/propositional+equality">propositional equality</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/diagonal+function">diagonal function</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/diagonal+subset">diagonal subset</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/diagonal+relation">diagonal relation</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/path+space+object">path space object</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/identity+type">identity type</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/path+type">path type</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/completely+presented+set">completely presented set</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/set">set</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/discrete+object">discrete object</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/0-truncated+object">0-truncated object</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/h-level+2">h-level 2</a>-<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/type">type</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/set">set</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/h-set">h-set</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/set">set</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/set">set</a> with <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/equivalence+relation">equivalence relation</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/groupoid+object+in+an+%28infinity%2C1%29-category">internal 0-groupoid</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/Bishop+set">Bishop set</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/setoid">setoid</a> with its <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/pseudo-equivalence+relation">pseudo-equivalence relation</a> an actual <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/equivalence+relation">equivalence relation</a></td></tr>
+<tr><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/equivalence+class">equivalence class</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/quotient+set">quotient set</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/quotient">quotient</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/quotient+type">quotient type</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/induction">induction</a></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/colimit">colimit</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/inductive+type">inductive type</a>, <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/W-type">W-type</a>, <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/M-type">M-type</a></td></tr>
+<tr><td style="text-align: left;">higher <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/induction">induction</a></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/%28infinity%2C1%29-colimit">higher colimit</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/higher+inductive+type">higher inductive type</a></td></tr>
+<tr><td style="text-align: left;">-</td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/0-truncated">0-truncated</a> <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/%28infinity%2C1%29-colimit">higher colimit</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/quotient+inductive+type">quotient inductive type</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/coinduction">coinduction</a></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/limit">limit</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/coinductive+type">coinductive type</a></td></tr>
+<tr><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/preset">preset</a></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/type">type</a> without <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/identity+types">identity types</a></td></tr>
+<tr><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/set">set</a> of <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/truth+values">truth values</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/subobject+classifier">subobject classifier</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/type+of+propositions">type of propositions</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/domain+of+discourse">domain of discourse</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/universe">universe</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/object+classifier">object classifier</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/type+universe">type universe</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/modality">modality</a></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/closure+operator">closure operator</a>, (<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/idempotent+monad">idempotent</a>) <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/monad">monad</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/modal+type+theory">modal type theory</a>, <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/monad+%28in+computer+science%29">monad (in computer science)</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/linear+logic">linear logic</a></td><td style="text-align: left;"></td><td style="text-align: left;">(<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/symmetric+monoidal+category">symmetric</a>, <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/closed+monoidal+category">closed</a>) <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/monoidal+category">monoidal category</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/linear+type+theory">linear type theory</a>/<a class="existingWikiWord" href="http://ncatlab.org/nlab/show/quantum+computation">quantum computation</a></td></tr>
+<tr><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/proof+net">proof net</a></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/string+diagram">string diagram</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/quantum+circuit">quantum circuit</a></td></tr>
+<tr><td style="text-align: left;">(absence of) <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/contraction+rule">contraction rule</a></td><td style="text-align: left;"></td><td style="text-align: left;">(absence of) <a class="existingWikiWord" href="http://ncatlab.org/nlab/show/diagonal">diagonal</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/no-cloning+theorem">no-cloning theorem</a></td></tr>
+<tr><td style="text-align: left;"></td><td style="text-align: left;"></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/synthetic+mathematics">synthetic mathematics</a></td><td style="text-align: left;"><a class="existingWikiWord" href="http://ncatlab.org/nlab/show/domain+specific+embedded+programming+language">domain specific embedded programming language</a></td></tr>
+</tbody></table>
+`{=html}
+:::
+
+# Computational trinitarianism punchline
+
+_For every_
+
+{.thing}
+:::
+structure one can put on a category
+:::
+
+_there is a corresponding_
+
+{.thing}
+:::
+type theory = systematic syntactic approach to manipulating the objects and morphisms of that category
+:::
+
+# Why is type theory important?
+
+Two approaches to free monoids
+
+1. The free monoid on an alphabet $`A` is the collection of binary trees with leaf nodes labeled in $`A`, quotiented by associativity
+2. The free monoid on an alphabet $`A` is the collection of words in $`A`
+
+The second approach requires *exponentially less* rewriting.
+
+Type theory gives us syntactic approaches to categorical algebra with *exponentially less* rewriting than the naive, "generators and relations" approach.
+
+Read Shulman's "Categorical Logic from a Categorical Point of View" to understand this.
+
+# We are spoiled by Martin-Löf type theory
+
+Martin-Löf type theory is weird because it *internalizes* everything.
+
+- Judgments `&xrarr;`{=html} function types
+$$`
+x \colon A \vdash b \colon B \:⇝\: (\lambda x. b) \colon (x \colon A) \to B
+`
+- Types `&xrarr;`{=html} terms of a universe
+$$`\Gamma \yields A \jty \:⇝\: \Gamma \yields A \colon U`
+
+*If we want to fully explore computational trinitarianism, we have to give this up!*
+
+# Functions without function types, types without universes
+
+This is totally possible!
+
+```
+struct Complex {
+    double re;
+    double im;
+}
+
+int main(**char argv, int argc) {
+    ...
+}
+```
+
+Even possible in the dependent setting!
+$$`x \colon X \yields T_x X \jty`
+The question is: how do we abstract?
+
+# Module systems
+
+```
+module type Stack = sig
+  type elt
+  type t
+
+  val empty : t
+  val push : t -> elt -> t
+  val pop : t -> (t, elt option)
+end
+```
+
+Note: OCaml has function types, but this still makes sense without them!
+
+# Generalized module systems
+
+ML-style module systems typically assume a base language of the simply typed lambda calculus, e.g. the internal language of cartesian closed categories.
+
+What about other doctrines? (doctrine = structure on a category)
+
+# Module systems for symmetric monoidal categories
+
+*Example.* The dining philosophers
+
+{.figure}
+:::
+![](static/dining_philosophers.png){width=500}
+:::
+
+# Module system for the dining philosophers
+
+{.scroll}
+:::
+```
+module type Philosopher = sig
+  type leftfork
+  type rightfork
+  type eating
+  type thinking
+  type spaghetti
+
+  type init = [
+    state: thinking,
+    food: spaghetti
+  ]
+
+  fun start : [leftfork, rightfork, thinking] -> [eating]
+  fun finish : [eating, spaghetti] -> [leftfork, rightfork, thinking]
+end
+
+module type DiningPhilosophers = sig
+  type fork1
+  type fork2
+  type fork3
+
+  module Hegel : Philosopher with
+    type leftfork = fork1
+    type rightfork = fork2
+  module Shlegel : Philosopher with
+    type leftfork = fork2
+    type rightfork = fork3
+  module Kant : Philosopher with
+    type leftfork = fork3
+    type rightfork = fork1
+end
+```
+:::
+
+# A process in dining philosophers
+
+{.scroll}
+:::
+```
+module EatStrategy(DP : DiningPhilosophers) = struct
+  open DP
+
+  type init = [
+    hegel : Hegel.init,
+    schlegel : Schlegel.init,
+    kant : Kant.init,
+    forks : [fork1, fork2, fork3]
+  ]
+
+  type finished = [
+    hegel : Hegel.thinking,
+    schlegel : Schlegel.thinking,
+    kant : Kant.thinking,
+    forks : [fork1, fork2, fork3]
+  ]
+
+  fun eat_all[i : init] : finished = do
+    let [f1, f2, f3] = i.forks
+    [he] <- Hegel.start[i.hegel.state, f1, f2]
+    [f1, f2, ht] <- Hegel.finish[he, i.hegel.food]
+    [se] <- Schlegel.start[i.schlegel.state, f2, f3]
+    [f2, f3, st] <- Schlegel.finish[se, i.schlegel.food]
+    [ke] <- Kant.start[i.kant.state, f3, f1]
+    [f3, f1, kt] <- Kant.finish[ke, i.kant.food]
+    return [
+      hegel = ht,
+      schlegel = st,
+      kant = kt,
+      forks = [f1, f2, f3]
+    ]
+end
+```
+:::
+
+
+# How to understand module systems?
+
+1. A module signature is a dependent record type
+2. A module on that signature is an term of that type
+
+A dependent record type is like a normal record type, except the types of later fields can depend on the values of earlier fields.
+
+```
+type DiningPhilosopher = [
+  leftfork : Place,
+  rightfork : Place,
+  eating : Place,
+  thinking : Place,
+  spaghetti : Place,
+  start : [leftfork, rightfork, thinking] -> [eating]
+  finish : [eating, spaghetti] -> [leftfork, rightfork, thinking]
+]
+```
+
+# Implementing dependent type theory
+
+The hard part = conversion checking
+
+Assume: $`x \colon A`, $`f \colon A' \to B`. Is $`f\,x` well-typed?
+
+To answer this, we have check if $`A \equiv A'`
+
+Why is this hard? Suppose $`X \colon \ms{Bool} \to \ms{Type}`, $`A = X\,b_1`, $`A' = X\,b_2`. We now have to decide $`b_1 \equiv b_2`...
+
+The secret sauce = *open evaluation*
+
+# Open evaluation = evaluation of open terms to open values
+
+```
+-- Closed
+
+data Val = VBool Bool | VInt Int | VTuple [Val] | ...
+
+proj :: Val -> Int -> Val
+proj (VTuple xs) i = xs ! i
+proj _ = error "expected tuple"
+
+-- Open
+
+data Val = VNeu Neutral | VBool Bool | VInt Int | VTuple [Val] | ...
+data Neutral = NVar Int | NProj Neutral Int | ...
+
+proj :: Val -> Int -> Val
+proj (VTuple xs) i = xs ! i
+proj (VNeu n) i = VNeu (NProj n i)
+proj _ = error "expected tuple"
+```
+
+# Is dependent type theory the way to go?
+
+*Advantages:*
+
+1. Unified presentation
+
+   - Only two syntactic classes: types and terms
+
+1. Well-understood mathematically.
+
+   - Studied since the 60s
+   - Categorical semantics
+
+1. Well-understood from an implementation perspective
+
+   - Particularly after the "cubical rennaissance" where a _lot_ of experimentation with nonstandard type theories happened
+   - User-niceties like implicits are well-studied
+
+*Disadvantages:*
+
+1. Conversion checking still hard
+
+   - General recursion
+   - Word problems
+
+# Solution: only a little dependency, as a treat
+
+In a module system, *most stuff is irrelevant to type checking*.
+
+```
+module type Philosopher = sig
+  type rightfork (* we care about this stuff *)
+  ...
+
+  fun start : ... (* but not this *)
+  ...
+end
+```
+
+If $`P \colon \ms{Philosopher} \yields A \jty`, then we also have $`P \colon \ms{Philosopher}' \yields A \jty`, where
+
+```
+module type Philosopher' = sig
+   type rightfork
+   ...
+end
+```
+
+# Formal treatment: the static modality
+
+$$`\frac{\Gamma \yields A \jty}{\Gamma \yields \Open{A} \jty} \qquad
+\frac{\Gamma \yields a \colon A}{\Gamma \yields \eta_A(a) \colon \Open{A}} \qquad
+`
+
+$$`
+\frac{\Gamma \yields A \jty}{\Gamma \yields \isStatic{A} \jprop} \qquad
+\frac{\Gamma \yields A \jty}{\Gamma \yields \isStatic{\Open{A}} \jtrue} \qquad
+\frac{\Gamma \yields \isStatic{A} \jtrue}{\Gamma \yields \Open{A} \equiv A \jty}
+`
+
+$$`
+\frac{\Gamma \yields A \jty}{\Open{\Gamma} \yields A \jty} \qquad
+\frac{\Gamma \yields A \jty \qquad \Gamma, x \colon A \yields B \jty}{\Gamma \yields \Open{((x \colon A) \times B)} \equiv (x \colon \Open{A}) \times \Open{B}}
+`
+
+# Implementation: abstract interpretation
+
+Abstract interpretation is a technique often used in program analysis.
+
+Idea: compute a sound overapproximation of the semantics.
+
+*Example. (Interval analysis)* Consider the program
+
+```
+def euler_solve(init: float, n: int, dt: float):
+    x = init
+    for i in range(0,n):
+        x += dt * sin(x)
+    return x
+```
+
+We can use interval arithmetic to see how the result depends on the initial parameter; this is relevant if we have uncertainty in the initial parameter.
+
+# Abstract interpretation in type checking
+
+Big idea: we don't need to do full open evaluation, we just need an abstract interpretation that is sound with respect to conversion checking of types.

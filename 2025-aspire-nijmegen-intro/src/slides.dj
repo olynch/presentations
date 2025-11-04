@@ -1,0 +1,32 @@
+# Owen Lynch
+
+*Who:* PhD student in Sam's group at Oxford
+
+*Interest:* How does scientific knowledge become a formal artifact?
+
+*Last time (PhD Year 1):* Version control for scientific models
+
+*Realization in between:* I don't know what a scientific model is
+
+*Research in between:* Learn how to write a compiler
+
+*This time (PhD Year 2):* Building domain specific languages for various _doctrines_ of scientific models
+
+# Historical examples
+
+- Modelica (differential algebraic equations)
+- Simulink (signal propagation)
+- 20sim (port-Hamiltonian systems)
+- STAN (statistical models)
+
+Tell me about domain specific languages for model checking!!
+
+# Current work
+
+- *Resource sharing machines*: a DSL for continuous time unconstrained dynamics
+
+- *DoubleTT*: a DSL for models of double theories (for CatColab)
+
+- *RustyPPL*: A runtime system for a probabilistic programming language based on an efficient implemtation of infinite rose trees
+
+![](static/pleiades.png)
