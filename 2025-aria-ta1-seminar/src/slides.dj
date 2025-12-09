@@ -11,7 +11,7 @@ for
 Semi-dependent type theories
 :::
 
-November 5, 2025, ARIA TA1.1 Seminar
+November 5, 2025, ARIA TA1 Seminar
 
 Owen Lynch
 
@@ -20,10 +20,10 @@ Owen Lynch
 # Overview
 
 1. Module systems as categorical algebra
-2. Module systems as semi-dependent type theory
-3. The role of evaluation within dependent type theory
-4. Abstract interpretation review
-5. Abstract interpretation for semi-dependent type theories
+1. Module systems as semi-dependent type theory
+1. Abstract interpretation for semi-dependent type theories
+1. WIP implementations
+1. Bibliography
 
 # Computational trinitarianism
 
@@ -86,7 +86,15 @@ _there is a corresponding_
 type theory = systematic syntactic approach to manipulating the objects and morphisms of that category
 :::
 
-# Why is type theory important?
+| Categorical structure             | Type theory/PL theory             |
+|-----------------------------------|-----------------------------------|
+| Symmetric monoidal category       | Linear logic                      |
+| Cartesian closed category         | Simply typed lambda calculus      |
+| Locally cartesian closed category | Dependently typed lambda calculus |
+| Markov category                   | Probabilistic programming         |
+| Cartesian differential category   | Differentiable programming        |
+
+# Why are internal languages important to computer applications of category theory?
 
 Two approaches to free monoids
 
@@ -97,9 +105,24 @@ The second approach requires *exponentially less* rewriting.
 
 Type theory gives us syntactic approaches to categorical algebra with *exponentially less* rewriting than the naive, "generators and relations" approach.
 
-Read Shulman's "Categorical Logic from a Categorical Point of View" to understand this.
+# Cut elimination
 
-# We are spoiled by Martin-Löf type theory
+We can present morphisms in the free category on a graph in two ways.
+
+First way: "cutful"
+$$`\frac{e \colon A \to B \in G}{A \yields B} \qquad \frac{A \yields B \qquad B \yields C}{A \yields C}`
+Second way: "cut-free"
+$$`\frac{}{A \yields A} \qquad \frac{A \yields B \qquad e \colon B \to C \in G}{A \yields C}`
+
+```
+data Path (G : Graph) : G.Vertex -> G.Vertex -> Set where
+   empty : (a : G.Vertex) -> Path a a
+   snoc : (a b c : G.V) -> Path a b -> G.Edge b c -> Path a c
+```
+
+# How to implement internal languages?
+
+We are spoiled by Martin-Löf type theory and lambda calculus.
 
 Martin-Löf type theory is weird because it *internalizes* everything.
 
@@ -114,7 +137,7 @@ $$`\Gamma \yields A \jty \:⇝\: \Gamma \yields A \colon U`
 
 # Functions without function types, types without universes
 
-This is totally possible!
+This is actually the norm in mainstream non-functional languages.
 
 ```
 struct Complex {
@@ -133,24 +156,51 @@ The question is: how do we abstract?
 
 # Module systems
 
+{.scroll}
+:::
 ```
-module type Stack = sig
+module type Queue = sig
   type elt
   type t
 
   val empty : t
   val push : t -> elt -> t
+  val pushAll : t -> elt list -> t
   val pop : t -> (t, elt option)
 end
-```
 
-Note: OCaml has function types, but this still makes sense without them!
+module type Problem = sig
+  type cand
+
+  val expand : cand -> cand list
+  val pred : cand -> bool
+end
+
+(* depth-first, bredth-first, A*, you name it *)
+module Search(
+  Q : Queue,
+  P : Problem with type cand = Q.elt
+) = struct
+  let search (init : Q.elt) : Q.elt option
+    = let go xs = match Q.pop xs with
+         (xs', Some x) -> if P.pred x
+                          then Some x
+                          else go (Q.pushAll xs' (P.expand x))
+         (xs', Nothing) -> Nothing
+      in go (Q.push Q.empty init)
+end
+```
+:::
+
+This doesn't depend on the "object language" having a type of types, or even function types!
 
 # Generalized module systems
 
-ML-style module systems typically assume a base language of the simply typed lambda calculus, e.g. the internal language of cartesian closed categories.
+*Informal definition.* A *doctrine* is a type of structure one can put on a category. We identify a doctrine with its 2-category of categories that support that kind of structure.
 
-What about other doctrines? (doctrine = structure on a category)
+*Informal definition.* A doctrine supports an *internal language* if the objects and morphisms of "free models" for that doctrine can be described in terms of a type theory.
+
+*Thesis.* For every doctrine that supports an internal language, there should be a module system which can be thought of as *the internal language of the 2-category of models for that doctrine.*
 
 # Module systems for symmetric monoidal categories
 
@@ -160,6 +210,14 @@ What about other doctrines? (doctrine = structure on a category)
 :::
 ![](static/dining_philosophers.png){width=500}
 :::
+
+# Formalizing dining philosophers: Petri nets
+
+![](static/philosopher.pn.svg)
+
+*Perspective.* A Petri net is a presentation of a free symmetric monoidal category.
+
+"Petri nets are just module signatures for the doctrine of symmetric monoidal categories"
 
 # Module system for the dining philosophers
 
@@ -249,50 +307,16 @@ end
 A dependent record type is like a normal record type, except the types of later fields can depend on the values of earlier fields.
 
 ```
-type DiningPhilosopher = [
-  leftfork : Place,
-  rightfork : Place,
-  eating : Place,
-  thinking : Place,
-  spaghetti : Place,
+type Philosopher = [
+  leftfork : Type,
+  rightfork : Type,
+  ...
   start : [leftfork, rightfork, thinking] -> [eating]
   finish : [eating, spaghetti] -> [leftfork, rightfork, thinking]
 ]
 ```
 
-# Implementing dependent type theory
-
-The hard part = conversion checking
-
-Assume: $`x \colon A`, $`f \colon A' \to B`. Is $`f\,x` well-typed?
-
-To answer this, we have check if $`A \equiv A'`
-
-Why is this hard? Suppose $`X \colon \ms{Bool} \to \ms{Type}`, $`A = X\,b_1`, $`A' = X\,b_2`. We now have to decide $`b_1 \equiv b_2`...
-
-The secret sauce = *open evaluation*
-
-# Open evaluation = evaluation of open terms to open values
-
-```
--- Closed
-
-data Val = VBool Bool | VInt Int | VTuple [Val] | ...
-
-proj :: Val -> Int -> Val
-proj (VTuple xs) i = xs ! i
-proj _ = error "expected tuple"
-
--- Open
-
-data Val = VNeu Neutral | VBool Bool | VInt Int | VTuple [Val] | ...
-data Neutral = NVar Int | NProj Neutral Int | ...
-
-proj :: Val -> Int -> Val
-proj (VTuple xs) i = xs ! i
-proj (VNeu n) i = VNeu (NProj n i)
-proj _ = error "expected tuple"
-```
+Note that $`\yields \ms{DiningPhilosopher} \jty`, but $`\not\yields \ms{DiningPhilosopher} : \ms{Type}`
 
 # Is dependent type theory the way to go?
 
@@ -314,10 +338,56 @@ proj _ = error "expected tuple"
 
 *Disadvantages:*
 
-1. Conversion checking still hard
+1. Conversion checking is hard -- what does this mean?
 
-   - General recursion
-   - Word problems
+# Implementing dependent type theory
+
+The hard part = conversion checking
+
+Assume: $`x \colon A`, $`f \colon A' \to B`. Is $`f\,x` well-typed?
+
+To answer this, we must check if $`A \equiv A'`
+
+Why is this hard? Suppose $`X \colon \ms{Bool} \to \ms{Type}`, $`A = X\,b`, $`A' = X\,b'`. We now have to decide $`b \equiv b'`...
+
+The secret sauce = *open evaluation*
+
+# Open evaluation = evaluation of open terms to open values
+
+Essentially: a clever and efficient approach to *normalization*
+
+{.scroll}
+:::
+```
+-- Closed
+
+data Val = VBool Bool | VInt Int | VTuple [Val] | ...
+
+proj :: Val -> Int -> Val
+proj (VTuple xs) i = xs ! i
+proj _ = error "expected tuple"
+
+-- Open
+
+data Val = VNeu Neutral | VBool Bool | VInt Int | VTuple [Val] | ...
+data Neutral = NVar VarName | NProj Neutral Int | ...
+
+proj :: Val -> Int -> Val
+proj (VTuple xs) i = xs ! i
+proj (VNeu n) i = VNeu (NProj n i)
+proj _ = error "expected tuple"
+```
+:::
+
+*Example.* $`(a, b)[1][0] \leadsto b[0]`
+
+# Problem: does open evaluation terminate?
+
+If we have general recursion the answer is no.
+
+Also, open evaluation relies on the existence of normal forms!
+
+This not necessarily the case, for instance, when we have side effects, where equality of side-effecting code is dependent on laws such as "writing to a cell twice is the same as writing once."
 
 # Solution: only a little dependency, as a treat
 
@@ -347,36 +417,188 @@ end
 $$`\frac{\Gamma \yields A \jty}{\Gamma \yields \Open{A} \jty} \qquad
 \frac{\Gamma \yields a \colon A}{\Gamma \yields \eta_A(a) \colon \Open{A}} \qquad
 `
-
 $$`
 \frac{\Gamma \yields A \jty}{\Gamma \yields \isStatic{A} \jprop} \qquad
 \frac{\Gamma \yields A \jty}{\Gamma \yields \isStatic{\Open{A}} \jtrue} \qquad
 \frac{\Gamma \yields \isStatic{A} \jtrue}{\Gamma \yields \Open{A} \equiv A \jty}
 `
-
 $$`
 \frac{\Gamma \yields A \jty}{\Open{\Gamma} \yields A \jty} \qquad
-\frac{\Gamma \yields A \jty \qquad \Gamma, x \colon A \yields B \jty}{\Gamma \yields \Open{((x \colon A) \times B)} \equiv (x \colon \Open{A}) \times \Open{B}}
+\frac{\Gamma \yields \isStatic{A} \jtrue \qquad \Gamma, x \colon A \yields \isStatic{B} \jtrue}{\Gamma \yields \isStatic{(x \colon A) \times B} \jtrue}
 `
 
-# Implementation: abstract interpretation
+$$`
+\frac{}{\yields \isStatic{\ms{Type}} \jtrue} \qquad \frac{\Gamma \yields A \colon \ms{Place} \quad \Gamma \yields B \colon \ms{Place}}{
+\Gamma \yields \Open{(A \to B)} \cong 1
+}
+`
 
-Abstract interpretation is a technique often used in program analysis.
+*Big idea:* We only need to worry about normalization for elements of $`\Open{A}`!
 
-Idea: compute a sound overapproximation of the semantics.
+# How to typecheck in this context?
 
-*Example. (Interval analysis)* Consider the program
+Idea: replace open evaluation with a *sound overapproximation* of open evaluation, guided by the static modality. I want to describe this as a kind of "abstract interpretation."
+
+*Example.* A traditional abstract interpretation would be nullability analysis.
 
 ```
-def euler_solve(init: float, n: int, dt: float):
-    x = init
-    for i in range(0,n):
-        x += dt * sin(x)
-    return x
+int main() {
+    int* p = malloc(sizeof(int));
+    *p = 2;
+    return *p + 3;
+}
 ```
 
-We can use interval arithmetic to see how the result depends on the initial parameter; this is relevant if we have uncertainty in the initial parameter.
+Can this program crash? We can answer this via a *nullability* analysis.
+
+- Replace regular types with unit, pointer type with boolean (nullable/non-nullable)
+- Run the program
 
 # Abstract interpretation in type checking
 
-Big idea: we don't need to do full open evaluation, we just need an abstract interpretation that is sound with respect to conversion checking of types.
+Suppose we typecheck a langauge with a boolean type such that $`\Open{\ms{Bool}} \cong 1`.
+
+```
+data Syntax = Var VarName | Or Syntax Syntax | ...
+
+data Val = VNeu Neutral | VOpaque | ...
+
+eval :: Env -> Syntax -> Val
+eval _ (Or _ _) = VOpaque
+```
+
+Why is this sound?
+
+# Soundness of abstract interpretation
+
+Recall the rule:
+
+$$`\frac{\Gamma \yields A \jty}{\Open{\Gamma} \yields A \jty}`
+
+In order for this to work, we have to *restrict* rules for other types.
+
+$$`\frac{\Gamma \yields b \colon \ms{Bool} \qquad \Gamma \yields a, a' \colon A}{\Gamma \yields \ite{b}{a}{a'} \colon A} \leadsto \frac{\Gamma \yields b \colon \ms{Bool} \qquad \Gamma \yields a, a' \colon A \qquad \Gamma \yields \Open{A} \cong 1}{\Gamma \yields \ite{b}{a}{a'} \colon A}`
+
+This can be tricky! But there are ways to build up the rules of the type theory so that this is the case.
+
+# Implementation showcase
+
+- [oneml](https://git.sgai.uk/creators/langdev/-/tree/main/packages/oneml?ref_type=heads)
+- [doublett](https://github.com/ToposInstitute/CatColab/tree/main/packages/catlog/src/tt)
+- [sifaka2](https://github.com/olynch/sifaka2)
+
+# OneML
+
+"Implemented" in the sense that I can reject ill-formed programs.
+
+{.scroll}
+:::
+```
+type EQ := [ t : Type, eq : t -> t -> Bool ]
+
+type MAP := [
+  key : Type,
+  t : Type => Type,
+
+  lookup : (a : Type) => t a -> key -> Option a,
+  empty : (a : Type) => t a,
+  insert : (a : Type) => key -> a -> t a -> t a,
+]
+
+term NaiveMap : (Eq : EQ) => MAP & [ .key := Eq.t ] := Eq ↦ [
+  key := Eq.t,
+  t := a ↦ Eq.t -> Option a,
+
+  lookup := a ↦ m ↦ m,
+  empty := _ ↦ _ ↦ 'none,
+  insert := _ ↦ k ↦ v ↦ x ↦ j ↦ %if (Eq.eq k j) ['some v, x j]
+]
+```
+:::
+
+# DoubleTT
+
+Elaboration to catlog data structures, which can be used in analyses.
+
+{.scroll}
+:::
+```
+type Graph := [
+  V : Entity,
+  E : Entity,
+  src : (Id Entity)[E, V],
+  tgt : (Id Entity)[E, V],
+]
+
+type Graph2 := [
+  V : Entity,
+  g1 : Graph & [ .V := V],
+  g2 : Graph & [ .V := V]
+]
+
+generate Graph2
+#/ result:
+#/ object generators:
+#/   V : Entity
+#/   g1.E : Entity
+#/   g2.E : Entity
+#/ morphism generators:
+#/   g1.src : g1.E -> V (Id Entity)
+#/   g1.tgt : g1.E -> V (Id Entity)
+#/   g2.src : g2.E -> V (Id Entity)
+#/   g2.tgt : g2.E -> V (Id Entity)
+```
+:::
+
+[DoubleTT in CatColab](http://localhost:5173/analysis/019a3b53-740d-74f2-958e-9888d7e3ca34)
+
+# Sifaka2
+
+Implemented, in the sense of compilation to x86_64 assembly (via QBE)
+
+```
+def vAdd (n : Nat) (xs : n=>Double) (ys : n=>Double) : n=>Double =
+  i ↦ xs!i + ys!i
+
+eval (vAdd 3 (i ↦ @cast i * @cast i) (i ↦ @cast i)) ! 2
+# --> 6
+```
+
+{.scroll}
+:::
+```
+export function l $vAdd (l %_0, l %_1, l %_2, ) {
+@start
+	%_3 =l mul 8, %_0
+	%_4 =l call $malloc (l %_3)
+	jmp @_0
+@_0
+	%_5 =l phi @start 0, @_0 %_13
+	%_6 =l mul %_5, 8
+	%_7 =l add %_1, %_6
+	%_8 =d loadd %_7
+	%_9 =l mul %_5, 8
+	%_10 =l add %_2, %_9
+	%_11 =d loadd %_10
+	%_12 =d add %_8, %_11
+	%_13 =l add %_5, 1
+	%_14 =l mul %_5, 8
+	%_15 =l add %_4, %_14
+	stored %_12, %_15
+	%_16 =l cultl %_13, %_0
+	jnz %_16, @_0, @_1
+@_1
+	ret %_4
+}
+```
+:::
+
+# Bibliography
+
+- [A. Kovács, Type-Theoretic Signatures for Algebraic Theories and Inductive Types, 2022](https://andraskovacs.github.io/pdfs/phdthesis_compact.pdf)
+- [A. Rossberg, 1ML -- Core and Modules United, 2015](https://people.mpi-sws.org/~rossberg/papers/Rossberg%20-%201ML%20--%20Core%20and%20modules%20united.pdf)
+- [A. Paszke et al., Getting to the Point. Index Sets and Parallelism-Preserving Autodiff for Pointful Array Programming, 2021](https://arxiv.org/abs/2104.05372)
+- [E. Rijke, M. Shulman, B. Spitters, Modalities in homotopy type theory, 2020](https://lmcs.episciences.org/6015)
+- [J. Sterling and R. Harper, Logical Relations as Types: Proof-Relevant Parametricity for Program Modules, 2021](https://dlnext.acm.org/doi/pdf/10.1145/3474834)
+- [J. Sterling, First Steps in Synthetic Tait Computability, Part V (Prospects), 2021](https://web.archive.org/web/20230326181813/https://www.jonmsterling.com/papers/sterling-2021-thesis.pdf)
+- [M. Shulman, Categorical logic from a categorical point of view, 2016](https://mikeshulman.github.io/catlog/catlog.pdf)

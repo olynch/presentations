@@ -78,3 +78,15 @@ a.existingWikiWord {
 .thing {
     color: blue;
 }
+
+table {
+    border-collapse: collapse;
+}
+
+th {
+    border-style: solid;
+}
+
+td {
+    border-style: solid;
+}
